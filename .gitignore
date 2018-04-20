@@ -1,0 +1,12 @@
+/bin
+/ogre
+/sdl
+/src/Debug
+/src/Release
+/tmp
+
+.vs
+__pycache__
+*.pyc
+
+*.user

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="ShowPythonInfo" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PythonCompany Condition="$(PythonCompany) == ''">PythonCore</PythonCompany>
+    <PythonVersion Condition="$(PythonVersion) == ''">3.6</PythonVersion>
+    <DefaultDebuggerFlavor>WindowsLocalDebugger</DefaultDebuggerFlavor>
+    <DefaultDebuggerFlavor Condition="$(HasPythonDebugLaunchProvider) == 'true'">PythonDebugLaunchProvider</DefaultDebuggerFlavor>
+  </PropertyGroup>
+  
+  <!--
+  Inspect the registry to discover an installation of the requested runtime.
+  -->
+  <PropertyGroup Label="PythonConfiguration">
+    <_RegistryView>RegistryView.Registry32</_RegistryView>
+    <_RegistryView Condition="$(Platform) == 'x64'">RegistryView.Registry64</_RegistryView>
+    <_PythonTag>$(PythonVersion)-32</_PythonTag>
+    <_PythonTag Condition="$(Platform) == 'x64'">$(PythonVersion)</_PythonTag>
+    <PythonHome Condition="$(PythonHome) == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_CURRENT_USER\SOFTWARE\Python\$(PythonCompany)\$(_PythonTag)\InstallPath', null, null, $(_RegistryView)))</PythonHome>
+    <PythonHome Condition="$(PythonHome) == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Python\$(PythonCompany)\$(_PythonTag)\InstallPath', null, null, $(_RegistryView)))</PythonHome>
+    <PythonExe Condition="$(PythonExe) == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_CURRENT_USER\SOFTWARE\Python\$(PythonCompany)\$(_PythonTag)\InstallPath', 'ExecutablePath', null, $(_RegistryView)))</PythonExe>
+    <PythonExe Condition="$(PythonExe) == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Python\$(PythonCompany)\$(_PythonTag)\InstallPath', 'ExecutablePath', null, $(_RegistryView)))</PythonExe>
+    <PythonExe Condition="$(PythonExe) == '' and $(PythonHome) != ''">$(PythonHome)python.exe</PythonExe>
+    <PythonDevVersion>$([MSBuild]::GetRegistryValueFromView('HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\$(_PythonTag)\InstalledFeatures', 'dev', null, $(_RegistryView)))</PythonDevVersion>
+    <PythonDevVersion Condition="$(PythonDevVersion) == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\$(_PythonTag)\InstalledFeatures', 'dev', null, $(_RegistryView)))</PythonDevVersion>
+    <PythonCorePDBVersion>$([MSBuild]::GetRegistryValueFromView('HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\$(_PythonTag)\InstalledFeatures', 'core_pdb', null, $(_RegistryView)))</PythonCorePDBVersion>
+    <PythonCorePDBVersion Condition="$(PythonCorePDBVersion) == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\$(_PythonTag)\InstalledFeatures', 'core_pdb', null, $(_RegistryView)))</PythonCorePDBVersion>
+    <PythonCoreDVersion>$([MSBuild]::GetRegistryValueFromView('HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore\$(_PythonTag)\InstalledFeatures', 'core_d', null, $(_RegistryView)))</PythonCoreDVersion>
+    <PythonCoreDVersion Condition="$(PythonCoreDVersion) == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\$(_PythonTag)\InstalledFeatures', 'core_d', null, $(_RegistryView)))</PythonCoreDVersion>
+    <PythonDebugSuffix Condition="$(PythonCoreDVersion) != ''">_d</PythonDebugSuffix>
+    <PythonDExe Condition="$(PythonExe) != '' and $(PythonDExe) == ''">$([System.IO.Path]::GetDirectoryName($(PythonExe)))\python$(PythonDebugSuffix).exe</PythonDExe>
+    <PythonDExe Condition="!Exists($(PythonDExe))">$(PythonExe)</PythonDExe>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(PythonHome) != '' and $(PythonDevVersion) != ''">
+    <PythonInclude Condition="Exists('$(PythonHome)include')">$(PythonHome)include</PythonInclude>
+    <PythonLibs Condition="Exists('$(PythonHome)libs')">$(PythonHome)libs</PythonLibs>
+  </PropertyGroup>
+
+  <!--
+  Add the discovered paths to our configuration.
+  For debug builds without debug Python binaries, change the runtime library
+  to ensure compatibility.
+  -->
+  <ItemDefinitionGroup Condition="$(PythonHome) != ''">
+    <ClCompile>
+      <AdditionalIncludeDirectories Condition="$(PythonInclude) != ''">$(PythonInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary Condition="$(Configuration) == 'Debug' and $(PythonCoreDVersion) == ''">MultithreadedDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link Condition="$(PythonLibs) != ''">
+      <AdditionalLibraryDirectories>$(PythonLibs);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!--
+  The ShowPythonInfo target displays messages for the runtime we have discovered.
+  -->
+  <Target Name="_ShowPythonInfo" Condition="$(PythonHome) != '' and $(PythonDevVersion) != ''">
+    <Message Text="Using Python $(PythonVersion) found at $(PythonHome)" Importance="normal" />
+    <Message Text=" - includes from $(PythonInclude)" Importance="normal" />
+    <Message Text=" - libs from $(PythonLibs)" Importance="normal" />
+  </Target>
+
+  <Target Name="_ShowPythonMissing" Condition="$(PythonHome) == '' or $(PythonDevVersion) == ''">
+    <Message Text="Searched for Python $(PythonVersion) for platform $(Platform) but did not find any." Importance="high" Condition="$(PythonHome) == ''" />
+    <Message Text="Found Python $(PythonVersion) at $(PythonHome) but headers and libraries were missing." Importance="high" Condition="$(PythonHome) != ''" />
+  </Target>
+
+  <Target Name="ShowPythonInfo" BeforeTargets="PrepareForBuild" DependsOnTargets="_ShowPythonInfo;_ShowPythonMissing" />
+</Project>

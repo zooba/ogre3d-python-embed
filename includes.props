@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OgreIncludeBase>$(MSBuildThisFileDirectory)\ogre\include\OGRE</OgreIncludeBase>
+    <OgreInclude>$(OgreIncludeBase);$(OgreIncludeBase)\Bites;$(OgreIncludeBase)\Overlay;$(OgreIncludeBase)\RTShaderSystem</OgreInclude>
+    <OgreLib>$(MSBuildThisFileDirectory)\ogre\lib</OgreLib>
+    <PyBindInclude>$(MSBuildThisFileDirectory)\pybind11\include\pybind11</PyBindInclude>
+    <SDLInclude>$(MSBuildThisFileDirectory)\sdl\SDL2-2.0.8\include</SDLInclude>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(OgreInclude);$(PyBindInclude);$(SDLInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_MT;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(OgreLib);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!--<Import Project="$(MSBuildThisFileDirectory)\pythonx86\build\native\python.props" Condition="Exists('$(MSBuildThisFileDirectory)\pythonx86\build\native\python.props')" />
+  <Import Project="$(MSBuildThisFileDirectory)\python\build\native\python.props" Condition="Exists('$(MSBuildThisFileDirectory)\python\build\native\python.props')" />-->
+  <Import Project="python.props" />
+</Project>
