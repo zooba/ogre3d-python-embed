@@ -39,5 +39,14 @@ PYBIND11_EMBEDDED_MODULE(ogre, m) {
         .value("NONE", ShadowTechnique::SHADOWTYPE_NONE)
         .value("TEXTURE_ADDITIVE", ShadowTechnique::SHADOWTYPE_TEXTURE_ADDITIVE)
         .value("TEXTURE_MODULATIVE", ShadowTechnique::SHADOWTYPE_TEXTURE_MODULATIVE);
+
+    py::class_<SinbadCharacterController, std::unique_ptr<SinbadCharacterController, py::nodelete>>(m, "CharacterController")
+        .def("run", &SinbadCharacterController::run)
+        .def("stand", &SinbadCharacterController::stand)
+        .def("jump", &SinbadCharacterController::jump)
+        .def("dance", &SinbadCharacterController::dance)
+        .def("draw_swords", &SinbadCharacterController::drawSwords)
+        .def("sheath_swords", &SinbadCharacterController::sheathSwords)
+        .def("slice", &SinbadCharacterController::slice);
 }
 

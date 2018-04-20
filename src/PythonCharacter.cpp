@@ -58,10 +58,17 @@ public:
 
     bool frameRenderingQueued(const FrameEvent& evt)
     {
-        if (mAIModule) {
-            mAIModule.attr("on_frame").call(evt.timeSinceLastFrame);
+        try {
+            if (mAIModule) {
+                mAIModule.attr("on_frame").call(mChara, mContextDict, evt.timeSinceLastFrame);
+            }
         }
-        
+        catch (const std::runtime_error &re) {
+            OutputDebugStringA(re.what());
+            ::MessageBoxA(NULL, re.what(), "Error initializing sample", MB_OK);
+            throw re;
+        }
+
         // let character update animations and camera
         mChara->addTime(evt.timeSinceLastFrame);
         return SdkSample::frameRenderingQueued(evt);
@@ -130,7 +137,7 @@ protected:
 
         // create a floor mesh resource
         MeshManager::getSingleton().createPlane("floor", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-            Plane(Vector3::UNIT_Y, 0), 100, 100, 10, 10, true, 1, 10, 10, Vector3::UNIT_Z);
+            Plane(Vector3::UNIT_Y, 0), 1000, 1000, 100, 100, true, 1, 10, 10, Vector3::UNIT_Z);
 
         // create a floor entity, give it a material, and place it at the origin
         Entity* floor = mSceneMgr->createEntity("Floor", "floor");
@@ -141,7 +148,16 @@ protected:
         // create our character controller
         mChara = new SinbadCharacterController(mCamera);
 
-        mAIModule = py::module::import("ai");
+        try {
+            mContextDict = py::dict();
+            mAIModule = py::module::import("ai");
+            mAIModule.attr("on_initialize").call(mChara, mContextDict);
+        }
+        catch (const std::runtime_error &re) {
+            OutputDebugStringA(re.what());
+            ::MessageBoxA(NULL, re.what(), "Error initializing sample", MB_OK);
+            throw re;
+        }
 
         mTrayMgr->toggleAdvancedFrameStats();
 
@@ -159,13 +175,14 @@ protected:
             delete mChara;
             mChara = 0;
         }
+        mContextDict.clear();
         MeshManager::getSingleton().remove("floor", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     }
 
     SinbadCharacterController* mChara;
 
     Ogre::SceneNode* mLight;
-
+    py::dict mContextDict;
     py::module mAIModule;
 };
 

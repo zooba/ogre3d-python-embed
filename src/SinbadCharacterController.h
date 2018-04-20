@@ -56,6 +56,82 @@ public:
         updateCamera(deltaTime);
     }
 
+    void run(float x, float z)
+    {
+        mKeyDirection.x = x;
+        mKeyDirection.z = z;
+
+        if (mBaseAnimID != ANIM_RUN_BASE)
+        {
+            setBaseAnimation(ANIM_RUN_BASE, true);
+            setTopAnimation(ANIM_RUN_TOP, true);
+        }
+    }
+
+    void stand()
+    {
+        mKeyDirection.x = 0;
+        mKeyDirection.z = 0;
+
+        if (mBaseAnimID != ANIM_IDLE_BASE)
+        {
+            setBaseAnimation(ANIM_IDLE_BASE);
+            setTopAnimation(ANIM_IDLE_TOP);
+            // re-enable hand animation
+            mAnims[ANIM_HANDS_RELAXED]->setEnabled(true);
+        }
+    }
+
+    void jump()
+    {
+        if (mBaseAnimID == ANIM_IDLE_BASE || mBaseAnimID == ANIM_RUN_BASE)
+        {
+            // jump if on ground
+            setBaseAnimation(ANIM_JUMP_START, true);
+            setTopAnimation(ANIM_NONE);
+            mTimer = 0;
+        }
+    }
+
+    void dance()
+    {
+        if (mBaseAnimID == ANIM_IDLE_BASE)
+        {
+            // start dancing
+            setBaseAnimation(ANIM_DANCE, true);
+            setTopAnimation(ANIM_NONE);
+            // disable hand animation because the dance controls hands
+            mAnims[ANIM_HANDS_RELAXED]->setEnabled(false);
+        }
+    }
+
+    void drawSwords()
+    {
+        if (!mSwordsDrawn && (mTopAnimID == ANIM_IDLE_TOP || mTopAnimID == ANIM_RUN_TOP))
+        {
+            setTopAnimation(ANIM_DRAW_SWORDS);
+            mTimer = 0;
+        }
+    }
+
+    void slice(bool vertical)
+    {
+        if (mSwordsDrawn)
+        {
+            setTopAnimation(vertical ? ANIM_SLICE_VERTICAL : ANIM_SLICE_HORIZONTAL);
+            mTimer = 0;
+        }
+    }
+
+    void sheathSwords()
+    {
+        if (mSwordsDrawn && (mTopAnimID == ANIM_IDLE_TOP || mTopAnimID == ANIM_RUN_TOP))
+        {
+            setTopAnimation(ANIM_DRAW_SWORDS);
+            mTimer = 0;
+        }
+    }
+
     void injectKeyDown(const KeyboardEvent& evt)
     {
         Keycode key = evt.keysym.sym;
@@ -69,19 +145,11 @@ public:
         {
             if (mTopAnimID == ANIM_IDLE_TOP || mTopAnimID == ANIM_RUN_TOP)
             {
-                // start dancing
-                setBaseAnimation(ANIM_DANCE, true);
-                setTopAnimation(ANIM_NONE);
-                // disable hand animation because the dance controls hands
-                mAnims[ANIM_HANDS_RELAXED]->setEnabled(false);
+                dance();
             }
             else if (mBaseAnimID == ANIM_DANCE)
             {
-                // stop dancing
-                setBaseAnimation(ANIM_IDLE_BASE);
-                setTopAnimation(ANIM_IDLE_TOP);
-                // re-enable hand animation
-                mAnims[ANIM_HANDS_RELAXED]->setEnabled(true);
+                stand();
             }
         }
 
@@ -93,17 +161,12 @@ public:
 
         else if (key == SDLK_SPACE && (mTopAnimID == ANIM_IDLE_TOP || mTopAnimID == ANIM_RUN_TOP))
         {
-            // jump if on ground
-            setBaseAnimation(ANIM_JUMP_START, true);
-            setTopAnimation(ANIM_NONE);
-            mTimer = 0;
+            jump();
         }
 
         if (!mKeyDirection.isZeroLength() && mBaseAnimID == ANIM_IDLE_BASE)
         {
-            // start running if not already moving and the player wants to move
-            setBaseAnimation(ANIM_RUN_BASE, true);
-            if (mTopAnimID == ANIM_IDLE_TOP) setTopAnimation(ANIM_RUN_TOP, true);
+            run(mKeyDirection.z, mKeyDirection.x);
         }
     }
 
