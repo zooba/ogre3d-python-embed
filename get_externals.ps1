@@ -2,7 +2,7 @@
 $pver = & py -3.6-32 -V
 if (-not $?) {
     Write-Host "Please install Python 3.6 32-bit (including the launcher)"
-    Write-Host " ** https://www.python.org/ftp/python/3.6.5/python-3.6.5-amd64-webinstall.exe"
+    Write-Host " ** https://www.python.org/ftp/python/3.6.5/python-3.6.5-webinstall.exe"
     Write-Host ""
     Write-Host "After installing, rerun this script."
     exit 1

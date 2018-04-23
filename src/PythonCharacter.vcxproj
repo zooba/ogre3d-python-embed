@@ -15,7 +15,7 @@
     <TargetName>Sample_PythonCharacter</TargetName>
     <ProjectGuid>{430F9796-C070-4288-A009-2B99A1A051B8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -118,14 +118,10 @@
   </ImportGroup>
   <Target Name="RewriteSamplesConfig" AfterTargets="Link" Condition="!$([System.IO.File]::ReadAllText('$(OutDir)samples.cfg').Contains('$(TargetName)'))">
     <Move SourceFiles="$(OutDir)samples.cfg" DestinationFiles="$(OutDir)samples.cfg.original" Condition="!Exists('$(OutDir)samples.cfg.original')" />
-    <WriteLinesToFile File="$(OutDir)samples.cfg"
-                      Overwrite="true"
-                      Lines="SampleFolder=.%0ASamplePlugin=$(TargetName)%0A" />
+    <WriteLinesToFile File="$(OutDir)samples.cfg" Overwrite="true" Lines="SampleFolder=.%0ASamplePlugin=$(TargetName)%0A" />
   </Target>
   <Target Name="GenerateRunCmd" AfterTargets="Link">
     <MakeDir Directories="$(ProjectDir)\..\bin" />
-    <WriteLinesToFile File="$(ProjectDir)..\bin\run.cmd"
-                      Overwrite="true"
-                      Lines="@echo off%0D%0Asetlocal%0D%0Aset PYTHONPATH=$(ProjectDir.TrimEnd(`\`))%0D%0Aset PATH=%PATH%%3B$(PythonHome.TrimEnd(`\`))%0D%0Apushd $(OutDir)%0D%0Astart SampleBrowser.exe%0D%0Apopd" />
+    <WriteLinesToFile File="$(ProjectDir)..\bin\run.cmd" Overwrite="true" Lines="@echo off%0D%0Asetlocal%0D%0Aset PYTHONPATH=$(ProjectDir.TrimEnd(`\`))%0D%0Aset PATH=%PATH%%3B$(PythonHome.TrimEnd(`\`))%0D%0Apushd $(OutDir)%0D%0Astart SampleBrowser.exe%0D%0Apopd" />
   </Target>
 </Project>

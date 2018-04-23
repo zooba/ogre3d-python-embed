@@ -4,31 +4,71 @@ from ogre import CharacterController
 from re import match
 from datetime import datetime, timedelta
 
+################################################################################
+# Command Definitions
+#region Command definitions
+
+class Command:
+    def __init__(self, seconds=1):
+        self.seconds = seconds
+
+    @property
+    def stop_at(self):
+        return datetime.now() + timedelta(seconds=self.seconds)
+
+    def execute(self, character : CharacterController):
+        func = getattr(character, self.func_name)
+        func(*self.args)
+
+class run_forward(Command):
+    func_name = "run"
+    args = -1, 0
+
+class run_backward(Command):
+    func_name = "run"
+    args = 1, 0
+
+class stand(Command): 
+    func_name = "stand"
+
+class dance(Command):
+    def execute(self, character):
+        # TODO: Sinbad has to stand still before dancing
+        #character.stand()
+        character.dance()
+
+class jump(Command):
+    func_name = "jump"
+
+class draw_swords(Command):
+    func_name = "draw_swords"
+
+class sheath_swords(Command):
+    func_name = "sheath_swords"
+
+#endregion
+################################################################################
+
+
+################################################################################
+# Script for Sinbad
+
 SCRIPT = [
-    'run forward for 2 seconds',
-    'dance for 4 seconds',
-    'stand for 0.5 seconds',
+    run_forward(seconds=2),
+    dance(seconds=4),
+    stand(seconds=0.5),
     # TODO: Show Sinbad's swords
-    #'draw swords',
-    #'slice',
-    #'slice vertically',
-    #'stand for 1 second',
-    #'sheath swords',
-    'run backward for 2 seconds',
-    'jump',
+    #draw_swords(),
+    run_backward(seconds=2),
+    jump(),
+    #stand(seconds=0.1),
+    #sheath_swords(),
 ]
+################################################################################
 
-def read_duration(s):
-    m = match(r'.*for ([\d.]+) seconds?$', s)
-    if m:
-        return timedelta(seconds=float(m.group(1)))
-    m = match(r'.*for (\d+) milliseconds?$', s)
-    if m:
-        return timedelta(seconds=float(m.group(1)) / 1000)
 
-    # We don't know how long, so run for one second
-    return timedelta(seconds=1)
-
+################################################################################
+# Callbacks from framework
 
 def on_initialize(character : CharacterController, context_dict : dict):
     context_dict["stop_at"] = datetime.now() + timedelta(seconds=3)
@@ -43,32 +83,8 @@ def on_frame(character : CharacterController, context_dict : dict, time_since_la
     i = (context_dict["script_line"] + 1) % len(SCRIPT)
     command = SCRIPT[i]
     context_dict["script_line"] = i
-    context_dict["stop_at"] = datetime.now() + read_duration(command)
+    context_dict["stop_at"] = command.stop_at
     
-    if command.startswith('run forward'):
-        character.run(-1, 0)
+    command.execute(character)
 
-    if command.startswith('run backward'):
-        character.run(1, 0)
-
-    if command.startswith('stand'):
-        character.stand()
-
-    if command.startswith('dance'):
-        # TODO: Sinbad cannot dance unless he's standing still
-        #character.stand()
-        character.dance()
-
-    if command.startswith('jump'):
-        character.jump()
-
-    if command.startswith('draw sword'):
-        character.draw_swords()
-
-    if command.startswith('slice vertical'):
-        character.slice(True)
-    elif command.startswith('slice'):
-        character.slice(False)
-
-    if command.startswith('sheath sword'):
-        character.sheath_swords()
+################################################################################
