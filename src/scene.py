@@ -11,7 +11,7 @@ def setup_shadows(scene):
 
 def setup_lights(scene):
     # Use a small amount of ambient lighting
-    scene.set_ambient_light(ColourValue(0.8, 0.8, 0.8, 1.0));
+    scene.set_ambient_light(ColourValue(1.0, 0.9, 0.9, 1.0));
 
     # Create a bright light above the scene
     light = scene.create_light("sun")

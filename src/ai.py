@@ -56,13 +56,12 @@ class sheath_swords(Command):
 # Script for Sinbad
 
 SCRIPT = [
-    run_forward(seconds=2),
     dance(seconds=4),
     stand(seconds=0.5),
-    # TODO: Show Sinbad's swords
     #draw_swords(),
-    run_backward(seconds=2),
-    jump(),
+    #run_forward(seconds=2),
+    #jump(),
+    #run_backward(seconds=2),
     #stand(seconds=0.1),
     #sheath_swords(),
 ]
