@@ -1,3 +1,5 @@
+**NOTE:** A new version of the Ogre3d SDK have been released since publishing this demo and we have not yet updated it to work with the new release. The old release appears to be unavailable, so this demo will not work as-is. We will update this soon (or if you get it working, feel free to send a PR).
+
 # Ogre3d Embedding Demo
 
 This demo embeds a Python runtime into a sample in the ogre3d engine.
