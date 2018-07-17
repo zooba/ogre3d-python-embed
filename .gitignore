@@ -2,7 +2,9 @@
 /ogre
 /sdl
 /src/Debug
+/src/x64/Debug
 /src/Release
+/src/x64/Release
 /tmp
 
 .vs
