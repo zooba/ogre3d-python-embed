@@ -12,7 +12,7 @@ In this section, we will discuss each approach and when you may consider using i
 
 The installer available from [python.org](https://www.python.org/) provides the full development kit for Python, including documentation, test suite and debugging files. It will be installed to a common location on a user's machine, and can be located on Windows using the registry (see [PEP 514](https://dev.python.org/peps/pep-0514.html) for details).
 
-Using the full installation is recommended only for developers, as it requires extra configuration in order to work well. For example, this sample relies on an existing Python 3.6 32-bit installation, which most regular users will not have and should not have to obtain.
+Using the full installation is recommended only for developers, as it requires extra configuration in order to work well. For example, this sample relies on an existing Python 3.6 64-bit installation, which most regular users will not have and should not have to obtain.
 
 ## Nuget.org Package
 
@@ -71,13 +71,13 @@ With these variables set, you are now ready to use F5 to launch your host applic
 
 The next step in our application is setting up continuous builds on a service such as [Visual Studio Team Services](https://aka.ms/vsts). When working with distributed build systems, it is important to be self-sufficient with regards to dependencies - assuming that the machine used for the build will have the correct versions of what we need is a risk. Luckily, by using the Nuget package for Python, we can avoid this risk.
 
-Since we are using 32-bit Python, we will install the [pythonx86](https://www.nuget.org/packages/pythonx86/) package as one of our build steps. By specifying the `-OutputDirectory` argument, we know where it will be installed. (Alternatively, on VSTS, we could use the [Install Python](https://marketplace.visualstudio.com/items?itemName=stevedower.python) task from the Python build tools extension.)
+Since we are using 64-bit Python, we will install the [python](https://www.nuget.org/packages/python/) package as one of our build steps. By specifying the `-OutputDirectory` argument, we know where it will be installed. (Alternatively, on VSTS, we could use the [Install Python](https://marketplace.visualstudio.com/items?itemName=stevedower.python) task from the Python build tools extension.)
 
 ```
-nuget install pythonx86 -Version 3.6.5 -OutputDirectory "$(Build.BinariesDirectory)"
+nuget install python -Version 3.6.6 -OutputDirectory "$(Build.BinariesDirectory)"
 ```
 
-Now we have a `$(Build.BinariesDirectory)\pythonx86.3.6.5\build\native\python.props` file that we can import instead of the one we used earlier for debugging. This properties file is simpler, as it does not support debugging, but still automatically configures builds to use the headers and libraries for the package. To select the correct file, we use a `PythonProps` property (see [include.props](include.props)) that we leave unset when debugging, but override for full builds.
+Now we have a `$(Build.BinariesDirectory)\python.3.6.6\build\native\python.props` file that we can import instead of the one we used earlier for debugging. This properties file is simpler, as it does not support debugging, but still automatically configures builds to use the headers and libraries for the package. To select the correct file, we use a `PythonProps` property (see [include.props](include.props)) that we leave unset when debugging, but override for full builds.
 
 ```xml
 <Import Project="$(PythonProps)" Condition="$(PythonProps) != ''" />
@@ -86,9 +86,9 @@ Now we have a `$(Build.BinariesDirectory)\pythonx86.3.6.5\build\native\python.pr
 
 ```
 msbuild PythonCharacter.vcxproj 
-    /p:Platform=x86
+    /p:Platform=x64
     /p:Configuration=Release
-    /p:PythonProps="$(Build.BinariesDirectory)\pythonx86.3.6.5\build\native\python.props"
+    /p:PythonProps="$(Build.BinariesDirectory)\python.3.6.6\build\native\python.props"
 ```
 
 ## Bundling the Embeddable Package
@@ -112,7 +112,7 @@ Depending on your application, you may not require the entire contents of the pa
 Any Python dependencies that your application has need to be installed as part of your build. However, the embeddable package does not include (or support!) `pip` and `setuptools`. The best way to install packages is to use a Nuget package or full install _of the same version of Python_, and pass the `--target` parameter:
 
 ```
-$(Build.BinariesDirectory)\pythonx86.3.6.5\tools\python.exe -m pip install 
+$(Build.BinariesDirectory)\python.3.6.6\tools\python.exe -m pip install 
     --target "$(Build.BinariesDirectory)\bin\libraries"
     -r requirements.txt
 ```
