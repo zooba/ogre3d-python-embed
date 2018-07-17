@@ -17,7 +17,6 @@
     </Link>
   </ItemDefinitionGroup>
 
-  <!--<Import Project="$(MSBuildThisFileDirectory)\pythonx86\build\native\python.props" Condition="Exists('$(MSBuildThisFileDirectory)\pythonx86\build\native\python.props')" />
-  <Import Project="$(MSBuildThisFileDirectory)\python\build\native\python.props" Condition="Exists('$(MSBuildThisFileDirectory)\python\build\native\python.props')" />-->
-  <Import Project="python.props" />
+  <Import Project="$(PythonProps)" Condition="$(PythonProps) != ''" />
+  <Import Project="python.props" Condition="$(PythonProps) == ''" />
 </Project>

@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 #region Command definitions
 
 class Command:
+    args = ()
+
     def __init__(self, seconds=1):
         self.seconds = seconds
 
@@ -16,7 +18,7 @@ class Command:
     def stop_at(self):
         return datetime.now() + timedelta(seconds=self.seconds)
 
-    def execute(self, character : CharacterController):
+    def execute(self, character):
         func = getattr(character, self.func_name)
         func(*self.args)
 
@@ -54,13 +56,12 @@ class sheath_swords(Command):
 # Script for Sinbad
 
 SCRIPT = [
-    run_forward(seconds=2),
     dance(seconds=4),
     stand(seconds=0.5),
-    # TODO: Show Sinbad's swords
     #draw_swords(),
-    run_backward(seconds=2),
-    jump(),
+    #run_forward(seconds=2),
+    #jump(),
+    #run_backward(seconds=2),
     #stand(seconds=0.1),
     #sheath_swords(),
 ]

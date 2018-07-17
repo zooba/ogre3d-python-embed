@@ -77,7 +77,13 @@ public:
     bool keyPressed(const KeyboardEvent& evt)
     {
         if (evt.keysym.sym == SDLK_F5) {
-            mAIModule.reload();
+            try {
+                mAIModule.reload();
+            }
+            catch (const std::runtime_error &re) {
+                OutputDebugStringA(re.what());
+                ::MessageBoxA(NULL, re.what(), "Error initializing sample", MB_OK);
+            }
         }
 
         // relay input events to character controller
